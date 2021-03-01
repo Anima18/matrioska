@@ -5,6 +5,7 @@ import 'menuView/menu_view_factory.dart';
 import 'menu_item.dart';
 import 'popup_window.dart';
 import 'dart:math' as math;
+import 'package:provider/provider.dart';
 
 typedef SearchCallback = void Function(List<MenuItem> menuItems);
 
@@ -12,7 +13,6 @@ abstract class SearchBarCallback {
   void hidden(MenuItem menuItem);
   void expanded(MenuItem menuItem);
   void search(MenuItem menuItem);
-  Color activeColor = Colors.blue;
 }
 
 class SearchBar extends StatefulWidget {
@@ -21,7 +21,7 @@ class SearchBar extends StatefulWidget {
   final double height;
   final SearchCallback onSearch;
   final Color activeColor;
-  SearchBar({this.height, this.children, this.onSearch, this.activeColor});
+  SearchBar({this.height, this.children, this.onSearch, this.activeColor=Colors.blue});
 
   @override
   _SearchBarState createState() {
@@ -34,31 +34,25 @@ class _SearchBarState extends State<SearchBar> implements SearchBarCallback {
 
 
   @override
-  void initState() {
-    if(widget.activeColor != null) {
-      activeColor = widget.activeColor;
-    }else {
-      activeColor = Colors.blue;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     List<PopupWindowButton> popupList = List();
     widget.children.forEach((element) {
 
       var offset = Offset(0, 10000);
-      var child = MenuTitle(menuItem:element, activeColor: activeColor,);
-      var window = MenuViewFactory.of(element, this);
+      var child = MenuTitle(menuItem:element);
+      var window = MenuViewFactory.of(element, this, widget.activeColor);
       menuViewMap[element.code] = window;
       popupList.add(PopupWindowButton(offset: offset, child: child, window: window,));
     });
-    return Container(
-      height: widget.height,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: popupList,
-      ),
+    return Provider.value(
+        value: widget.activeColor,
+        child: Container(
+          height: widget.height,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: popupList,
+          ),
+        ),
     );
   }
 
@@ -85,17 +79,13 @@ class _SearchBarState extends State<SearchBar> implements SearchBarCallback {
     });
   }
 
-  @override
-  Color activeColor;
 }
 
 class MenuTitle extends StatefulWidget {
   final MenuItem menuItem;
-  final Color activeColor;
   const MenuTitle({
     Key key,
     this.menuItem,
-    this.activeColor
   }) : super(key: key);
 
   @override
@@ -108,6 +98,7 @@ class MenuTitleState extends State<MenuTitle> {
 
   @override
   Widget build(BuildContext context) {
+    Color activeColor = context.read<Color>();
     return Container(
         height: 48,
         alignment: Alignment.center,
@@ -121,7 +112,7 @@ class MenuTitleState extends State<MenuTitle> {
               ),
               child: Text(
                 widget.menuItem.text.isNotEmpty ? widget.menuItem.text : widget.menuItem.name,
-                style: TextStyle(fontSize: 14.0, color: (widget.menuItem.selected || widget.menuItem.text.isNotEmpty)  ? widget.activeColor : Colors.black),
+                style: TextStyle(fontSize: 14.0, color: (widget.menuItem.selected || widget.menuItem.text.isNotEmpty)  ? activeColor : Colors.black),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -133,7 +124,7 @@ class MenuTitleState extends State<MenuTitle> {
               width: 18,
               height: 18,
               image: AssetImage("assets/ic_arrow_drop_down.png", package: "matrioska"),
-              color: (widget.menuItem.selected || widget.menuItem.text.isNotEmpty) ? widget.activeColor : Colors.black,
+              color: (widget.menuItem.selected || widget.menuItem.text.isNotEmpty) ? activeColor : Colors.black,
             ),)
 
           ],

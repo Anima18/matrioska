@@ -13,8 +13,9 @@ class DateIntervalMenuView extends MenuView {
 
   final DateIntervalMenuItem menuItem;
   final SearchBarCallback callback;
+  final Color activeColor;
 
-  DateIntervalMenuView(this.menuItem, this.callback);
+  DateIntervalMenuView(this.menuItem, this.callback, this.activeColor);
 
   @override
   _DateIntervalState createState() {
@@ -86,7 +87,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
                           var view = Container(
                             height: 44,
                             child: Center(
-                                child: Text(listItemIndexOf(index).code, style: TextStyle(color: listItemIndexOf(index).selected ? widget.callback.activeColor : Colors.black),),
+                                child: Text(listItemIndexOf(index).code, style: TextStyle(color: listItemIndexOf(index).selected ? widget.activeColor : Colors.black),),
 
                             ),
                             decoration: BoxDecoration(

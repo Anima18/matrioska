@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../common/widget.dart';
 import '../../common/constant.dart' as constant;
 import '../../stateView/StateView.dart';
@@ -11,8 +12,9 @@ import 'menu_view.dart';
 class ListMenuView extends MenuView {
   final ListMenuItem menuItem;
   final SearchBarCallback callback;
+  final Color activeColor;
 
-  ListMenuView(this.menuItem, this.callback);
+  ListMenuView(this.menuItem, this.callback, this.activeColor);
 
   @override
   _ListState createState() {
@@ -48,7 +50,6 @@ class ListMenuView extends MenuView {
 class _ListState extends State<ListMenuView> implements DataChangeCallback {
   final ListMenuItem menuItem;
   BuildContext context;
-  Color activeColor;
   ScrollController controller;
 
   _ListState(this.menuItem) {
@@ -62,7 +63,6 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
   @override
   void initState() {
     requestData();
-    activeColor = widget.callback.activeColor;
     //注册一个回调函数yourCallback
     WidgetsBinding.instance.addPostFrameCallback((_) => controller.jumpTo(menuItem.scrollOffset));
   }
@@ -126,13 +126,16 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
             controller: controller,
             itemCount: dataList().length,
             itemBuilder: (context, position) {
-              return ListViewItemView(dataList()[position], (listItem) {
-                itemClick(listItem);
-                widget.setText(listItem.text);
-                widget.setValue(listItem.code);
-                dismiss();
-                widget.onSearch();
-              }, activeColor);
+              return Provider.value(
+                  value: widget.activeColor,
+                  child: ListViewItemView(dataList()[position], (listItem) {
+                    itemClick(listItem);
+                    widget.setText(listItem.text);
+                    widget.setValue(listItem.code);
+                    dismiss();
+                    widget.onSearch();
+                  }),
+              );
             },
           ),
         ),
@@ -211,9 +214,8 @@ typedef OnItemClickListener = void Function(ListItem item);
 class ListViewItemView extends StatefulWidget {
   final ListItem listItem;
   final OnItemClickListener clickListener;
-  final Color activeColor;
 
-  ListViewItemView(this.listItem, this.clickListener, this.activeColor);
+  ListViewItemView(this.listItem, this.clickListener);
 
   @override
   ListViewItemState createState() {
@@ -224,6 +226,7 @@ class ListViewItemView extends StatefulWidget {
 class ListViewItemState extends State<ListViewItemView> {
   @override
   Widget build(BuildContext context) {
+    Color activeColor = context.read<Color>();
     var itemView = Container(
       child: Container(
         width: double.infinity,
@@ -232,7 +235,7 @@ class ListViewItemState extends State<ListViewItemView> {
           child: Text(
             widget.listItem.text,
             style: TextStyle(
-                color: widget.listItem.selected ? widget.activeColor : Colors.black),
+                color: widget.listItem.selected ? activeColor : Colors.black),
           ),
         ),
         decoration: BoxDecoration(

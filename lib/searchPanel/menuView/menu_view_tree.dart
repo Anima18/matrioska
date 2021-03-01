@@ -12,8 +12,9 @@ class TreeMenuView extends MenuView {
 
   final TreeMenuItem menuItem;
   final SearchBarCallback callback;
+  final Color activeColor;
 
-  TreeMenuView(this.menuItem, this.callback);
+  TreeMenuView(this.menuItem, this.callback, this.activeColor);
 
   @override
   State createState() {
@@ -50,13 +51,11 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
 
   final TreeMenuItem menuItem;
   BuildContext context;
-  Color activeColor;
   _TreeMenuState(this.menuItem);
 
   @override
   void initState() {
     requestData();
-    activeColor = widget.callback.activeColor;
   }
 
   void requestData() {

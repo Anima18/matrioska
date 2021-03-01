@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import '../menu_item.dart';
 import '../searchBar.dart';
 import 'menu_view.dart';
@@ -8,15 +10,15 @@ import 'menu_view_list.dart';
 import 'menu_view_tree.dart';
 
 class MenuViewFactory {
-    static MenuView of(MenuItem menuItem, SearchBarCallback callback) {
+    static MenuView of(MenuItem menuItem, SearchBarCallback callback, Color activeColor) {
       if(menuItem is InputMenuItem) {
         return InputMenuView(menuItem, callback);
       }else if(menuItem is ListMenuItem) {
-        return ListMenuView(menuItem, callback);
+        return ListMenuView(menuItem, callback, activeColor);
       }else if(menuItem is DateIntervalMenuItem) {
-        return DateIntervalMenuView(menuItem, callback);
+        return DateIntervalMenuView(menuItem, callback, activeColor);
       }else if(menuItem is TreeMenuItem) {
-        return TreeMenuView(menuItem, callback);
+        return TreeMenuView(menuItem, callback, activeColor);
       }
     }
 }

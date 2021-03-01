@@ -1,8 +1,7 @@
 name: matrioska
 description: A new Flutter package.
-version: 0.0.1
-author:
-homepage:
+version: 0.0.2
+homepage: https://github.com/Anima18/matrioska
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -12,8 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.0
-  dio: 3.0.7
+  dio: ^3.0.7
   intl: ^0.16.1
+  provider: ^4.3.3
 
 dev_dependencies:
   flutter_test:
@@ -21,10 +21,6 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-  cupertino_icons: ^1.0.0
-  dio: 3.0.7
-  intl: ^0.16.1
-
 # The following section is specific to Flutter.
 flutter:
 
