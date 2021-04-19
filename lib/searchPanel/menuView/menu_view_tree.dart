@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:matrioska/viewModel/view_state.dart';
+
+import '../../common/constant.dart' as constant;
 import '../../common/widget.dart';
 import '../../stateView/StateView.dart';
 import '../../tree/tree_data.dart';
-import '../../common/constant.dart' as constant;
 import '../../tree/tree_view.dart';
 import '../menu_item.dart';
 import '../searchBar.dart';
@@ -60,11 +62,11 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
 
   void requestData() {
     if (menuItem.dataListener != null) {
-      if (menuItem.viewStatus == ViewStatus.loading) {
+      if (menuItem.viewStatus == DataState.loading) {
         menuItem.dataListener(this);
       }
     } else {
-      menuItem.viewStatus = ViewStatus.content;
+      menuItem.viewStatus = DataState.success;
     }
   }
 
@@ -78,7 +80,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
           Container(
             height: 320,
             child: StateView(
-              viewStatus: menuItem.viewStatus,
+              viewState: menuItem.viewStatus,
               errorMessage: menuItem.message,
               child: buildTreeView(),
               onRetry: () {
@@ -169,7 +171,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
   @override
   void onError(String message) {
     setState(() {
-      menuItem.viewStatus = ViewStatus.error;
+      menuItem.viewStatus = DataState.error;
       menuItem.message = message;
     });
   }
@@ -177,7 +179,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
   @override
   void onSuccess(List<TreeData> dataList) {
     setState(() {
-      menuItem.viewStatus = ViewStatus.content;
+      menuItem.viewStatus = DataState.success;
       widget.menuItem.dataList = dataList;
       menuItem.message = "";
     });
@@ -186,7 +188,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
   @override
   void onLoading() {
     setState(() {
-      menuItem.viewStatus = ViewStatus.loading;
+      menuItem.viewStatus = DataState.loading;
     });
   }
 }

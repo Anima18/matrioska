@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:matrioska/viewModel/view_state.dart';
 
 typedef OnRetry = void Function();
 
@@ -8,17 +9,17 @@ class StateView extends StatelessWidget {
   Widget _emptyView;
   final Widget child;
   final OnRetry onRetry;
-  final ViewStatus viewStatus;
+  final DataState viewState;
   final String errorMessage;
 
   StateView(
       {@required this.child,
-      this.onRetry,
-      @required this.viewStatus,
-      @required this.errorMessage,
-      Widget loadingView,
-      Widget errorView,
-      Widget emptyView}) {
+        this.onRetry,
+        this.viewState : DataState.loading,
+        @required this.errorMessage,
+        Widget loadingView,
+        Widget errorView,
+        Widget emptyView}) {
     _loadingView  = loadingView == null ? _getLoadingView() : loadingView;
     _errorView  = errorView == null ? _getErrorView() : errorView;
     _emptyView  = emptyView == null ? _getEmptyView() : emptyView;
@@ -27,11 +28,11 @@ class StateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (viewStatus == ViewStatus.loading) {
+    if (viewState == DataState.loading) {
       return _loadingView;
-    } else if (viewStatus == ViewStatus.error) {
+    } else if (viewState == DataState.error) {
       return _errorView;
-    } else if (viewStatus == ViewStatus.empty) {
+    } else if (viewState == DataState.empty) {
       return _emptyView;
     } else {
       return child;
@@ -53,18 +54,17 @@ class StateView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Image.asset(
-                "assets/error.png",
-                package: "matrioska",
-                width: 150,
-                height: 150,
+              Image(
+                image: AssetImage("assets/error.png", package: "matrioska"),
+                width: 88,
+                height: 88,
               ),
               SizedBox(
                 height: 16,
               ),
               Text(
                 errorMessage != null ? errorMessage : "",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               FlatButton(
                 child: Text("点击重试"),
@@ -84,18 +84,17 @@ class StateView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Image.asset(
-              "assets/not_data.png",
-              package: "matrioska",
-              width: 150,
-              height: 150,
+            Image(
+              image: AssetImage("assets/not_data.png", package: "matrioska"),
+              width: 88,
+              height: 88,
             ),
             SizedBox(
               height: 16,
             ),
             Text(
               "没有数据",
-              style: TextStyle(fontSize: 14, color: Colors.black54),
+              style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
             FlatButton(
               child: Text("点击重试"),
@@ -114,5 +113,3 @@ class StateView extends StatelessWidget {
     }
   }
 }
-
-enum ViewStatus { loading, error, empty, content }

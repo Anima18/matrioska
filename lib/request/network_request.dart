@@ -1,25 +1,40 @@
 
-import 'package:dio/dio.dart';
 import 'package:dio/adapter.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'requestInterceptorsWrapper.dart';
+
+import 'error_message.dart';
 
 typedef void OnSuccess<T>(T data);
 typedef void OnError(String message);
+typedef void OnProgress(int progress);
 typedef T JsonParser<T>(Map<String, dynamic> json);
 
+final  Dio _dio = new Dio(BaseOptions(
+  connectTimeout: 10000,
+  receiveTimeout: 10000,
+));
+
+class HeaderInterceptor extends InterceptorsWrapper {
+
+  final Map<String, String> requestHeaders;
+
+  HeaderInterceptor(this.requestHeaders);
+
+  @override
+  Future onRequest(RequestOptions options) {
+    options.headers.addAll(requestHeaders);
+    return super.onRequest(options);
+  }
+}
 
 class NetworkRequest<T> {
-  final BuildContext context;
-  Dio _dio;
-  RequestInterceptorsWrapper _requestInterceptors;
-
   //请求地址
   final String url;
-  //请求提示信息
-  final String message;
   //请求参数
-  final Map<String, dynamic> parameters;
+  final Map<String, dynamic> queryParameters;
+  //请求body
+  final Map<String, dynamic> data;
   //文件保存地址
   final String saveFilePath;
   //请求头
@@ -29,45 +44,37 @@ class NetworkRequest<T> {
 
   final JsonParser jsonParser;
 
+
   CancelToken _token;
 
-  NetworkRequest(this.url, {this.context, this.message, this.parameters, this.requestHeaders,
-    this.saveFilePath, this.uploadFiles, @required this.jsonParser}) {
-    _token = new CancelToken();
-    _initRequestHeaders();
-
-    _requestInterceptors = new RequestInterceptorsWrapper(context, message, _token);
-    _dio = new Dio(_getRequestOptions());
-    _dio.interceptors.add(_requestInterceptors);
-    (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client){
+  NetworkRequest({@required this.url,
+    this.queryParameters,
+    this.data,
+    this.requestHeaders,
+    this.saveFilePath,
+    this.uploadFiles,
+    @required this.jsonParser}) {
+    if(this.requestHeaders != null) {
+      _dio.interceptors.add(HeaderInterceptor(requestHeaders));
+    }
+    /*(_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client){
       client.findProxy = (uri){
         return "PROXY 192.168.60.177:8888";
       };
-    };
-  }
-
-  void _initRequestHeaders() {
-    if(this.requestHeaders == null) {
-      requestHeaders = Map();
-    }
-    /*requestHeaders.addAll(
-        {
-          "Cookie":"JSESSIONID=DC08A331D8F83BFCE4FD806D3D4A9413",
-          "user-agent": "android"
-        });*/
+    };*/
   }
 
   Future<T> get({OnSuccess<T> onSuccess, OnError onError}) async {
     T data;
     try {
-      Response<Map<String, dynamic>> response = await _dio.get(url, cancelToken: _token, queryParameters: parameters);
+      Response<Map<String, dynamic>> response = await _dio.get(url, cancelToken: _token, queryParameters: queryParameters);
       data = jsonParser(response.data);
       if(onSuccess != null) {
         onSuccess(data);
       }
     } on DioError catch (e) {
       if(onError != null) {
-        onError(e.message);
+        onError(ErrorMessage.handleDioError(e));
       }
     }
     return Future<T>(()=>data);
@@ -76,7 +83,11 @@ class NetworkRequest<T> {
   Future<T> post({OnSuccess<T> onSuccess, OnError onError}) async {
     T data;
     try {
-      Response<Map<String, dynamic>> response = await _dio.post(url, cancelToken: _token, queryParameters: parameters);
+      Response<Map<String, dynamic>> response = await _dio.post(url,
+          cancelToken: _token,
+          queryParameters: queryParameters,
+          data: this.data
+      );
 
       data = jsonParser(response.data);
       if(onSuccess != null) {
@@ -84,13 +95,13 @@ class NetworkRequest<T> {
       }
     } on DioError catch (e) {
       if(onError != null) {
-        onError(e.message);
+        onError(ErrorMessage.handleDioError(e));
       }
     }
     return Future<T>(()=>data);
   }
 
-  Future<String> download({OnSuccess<String> onSuccess, OnError onError}) async {
+  Future<String> download({OnSuccess<String> onSuccess, OnProgress onProgress, OnError onError}) async {
     String data;
     try {
       await _dio.download(
@@ -99,11 +110,8 @@ class NetworkRequest<T> {
         cancelToken: _token,
         onReceiveProgress: (int count, int total) {
           int progress = count * 100 ~/ total;
-          if (progress % 2 == 0) {
-            _requestInterceptors.updateLoadingProgress("$progress%");
-          }
-          if (progress == 100) {
-            _requestInterceptors.hideLoading();
+          if(onProgress != null) {
+            onProgress(progress);
           }
         },
       );
@@ -113,16 +121,14 @@ class NetworkRequest<T> {
       }
       data = saveFilePath;
     } on DioError catch (e) {
-      _requestInterceptors.hideLoading();
-      String errorMessage = _requestInterceptors.handleError(e).error.toString();
       if(onError != null) {
-        onError(errorMessage);
+        onError(ErrorMessage.handleDioError(e));
       }
     }
     return Future<String>(()=>data);
   }
 
-  Future<T> upload({OnSuccess<T> onSuccess, OnError onError}) async {
+  Future<T> upload({OnSuccess<T> onSuccess, OnProgress onProgress, OnError onError}) async {
     T data;
     try {
       FormData formData = FormData();
@@ -143,11 +149,8 @@ class NetworkRequest<T> {
           data: formData,
           onSendProgress: (int sent, int total) {
             int progress = sent * 100 ~/ total;
-            if (progress % 2 == 0) {
-              _requestInterceptors.updateLoadingProgress("$progress%");
-            }
-            if (progress == 100) {
-              _requestInterceptors.hideLoading();
+            if(onProgress != null) {
+              onProgress(progress);
             }
           });
 
@@ -156,22 +159,12 @@ class NetworkRequest<T> {
         onSuccess(data);
       }
     } on DioError catch (e) {
-      _requestInterceptors.hideLoading();
-      String errorMessage = _requestInterceptors.handleError(e).error.toString();
       if(onError != null) {
-        onError(errorMessage);
+        onError(ErrorMessage.handleDioError(e));
       }
     }
     return Future<T>(()=>data);
   }
 
-
-  BaseOptions _getRequestOptions() {
-    return new BaseOptions(
-      connectTimeout: 10000,
-      receiveTimeout: 10000,
-      headers: requestHeaders,
-    );
-  }
 }
 

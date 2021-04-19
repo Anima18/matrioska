@@ -1,4 +1,5 @@
-import '../stateView/StateView.dart';
+import 'package:matrioska/viewModel/view_state.dart';
+
 import '../tree/tree_data.dart';
 
 ///查询工具栏菜单基类
@@ -57,7 +58,7 @@ class ListItem{
 class ListMenuItem extends MenuItem {
   List<ListItem> dataList = List();
   OnRequestDataListener dataListener;
-  ViewStatus viewStatus = ViewStatus.loading;
+  DataState viewStatus = DataState.loading;
   String message;
   ///当前树列表滚动的位置
   double scrollOffset = 0.0;
@@ -112,7 +113,7 @@ abstract class TreeDataChangeCallback {
 class TreeMenuItem extends MenuItem {
   final OnRequestTreeDataListener dataListener;
   List<TreeData> dataList = List();
-  ViewStatus viewStatus = ViewStatus.loading;
+  DataState viewStatus = DataState.loading;
   String message;
   ///当前树列表滚动的位置
   double scrollOffset = 0.0;

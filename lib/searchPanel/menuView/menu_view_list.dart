@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:matrioska/viewModel/view_state.dart';
 import 'package:provider/provider.dart';
-import '../../common/widget.dart';
-import '../../common/constant.dart' as constant;
-import '../../stateView/StateView.dart';
 
+import '../../common/constant.dart' as constant;
+import '../../common/widget.dart';
+import '../../stateView/StateView.dart';
 import '../menu_item.dart';
 import '../searchBar.dart';
 import 'menu_view.dart';
@@ -69,11 +70,11 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
 
   void requestData() {
     if (menuItem.dataListener != null) {
-      if (menuItem.viewStatus == ViewStatus.loading) {
+      if (menuItem.viewStatus == DataState.loading) {
         menuItem.dataListener(this);
       }
     } else {
-      menuItem.viewStatus = ViewStatus.content;
+      menuItem.viewStatus = DataState.success;
     }
   }
 
@@ -91,7 +92,7 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
           Container(
             height: 320,
             child: StateView(
-              viewStatus: menuItem.viewStatus,
+              viewState: menuItem.viewStatus,
               errorMessage: menuItem.message,
               child: buildListView(),
               onRetry: () {
@@ -187,7 +188,7 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
   @override
   void onError(String message) {
     setState(() {
-      menuItem.viewStatus = ViewStatus.error;
+      menuItem.viewStatus = DataState.error;
       menuItem.message = message;
     });
   }
@@ -195,7 +196,7 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
   @override
   void onSuccess(List<ListItem> dataList) {
     setState(() {
-      menuItem.viewStatus = ViewStatus.content;
+      menuItem.viewStatus = DataState.success;
       widget.menuItem.dataList = dataList;
       menuItem.message = "";
     });
@@ -204,7 +205,7 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
   @override
   void onLoading() {
     setState(() {
-      menuItem.viewStatus = ViewStatus.loading;
+      menuItem.viewStatus = DataState.loading;
     });
   }
 }
