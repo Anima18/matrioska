@@ -5,15 +5,26 @@ import 'package:flutter/material.dart';
 
 import 'error_message.dart';
 
+///成功回调
 typedef void OnSuccess<T>(T data);
+///错误回调
 typedef void OnError(String message);
+///请求进度回调
 typedef void OnProgress(int progress);
+///数据解析器
 typedef T JsonParser<T>(Map<String, dynamic> json);
+///错误拦截器
+typedef bool ErrorInterceptor<T>(T data);
 
 final  Dio _dio = new Dio(BaseOptions(
   connectTimeout: 10000,
   receiveTimeout: 10000,
 ));
+
+class RequestError implements Exception {
+  final String message;
+  RequestError(this.message);
+}
 
 class HeaderInterceptor extends InterceptorsWrapper {
 
@@ -41,9 +52,10 @@ class NetworkRequest<T> {
   Map<String, String> requestHeaders;
   //文件上传数据
   final List<String> uploadFiles;
-
+  //json数据解析
   final JsonParser jsonParser;
-
+  //成功请求错误拦截器
+  final ErrorInterceptor errorInterceptor;
 
   CancelToken _token;
 
@@ -53,7 +65,8 @@ class NetworkRequest<T> {
     this.requestHeaders,
     this.saveFilePath,
     this.uploadFiles,
-    @required this.jsonParser}) {
+    @required this.jsonParser,
+    this.errorInterceptor }) {
     if(this.requestHeaders != null) {
       _dio.interceptors.add(HeaderInterceptor(requestHeaders));
     }
@@ -64,41 +77,68 @@ class NetworkRequest<T> {
     };*/
   }
 
-  Future<T> get({OnSuccess<T> onSuccess, OnError onError}) async {
-    T data;
-    try {
-      Response<Map<String, dynamic>> response = await _dio.get(url, cancelToken: _token, queryParameters: queryParameters);
-      data = jsonParser(response.data);
-      if(onSuccess != null) {
-        onSuccess(data);
-      }
-    } on DioError catch (e) {
-      if(onError != null) {
-        onError(ErrorMessage.handleDioError(e));
-      }
+  bool intercept(T data) {
+    bool isIntercept = false;
+    if(errorInterceptor != null) {
+      isIntercept = errorInterceptor(data);
     }
-    return Future<T>(()=>data);
+    return isIntercept;
   }
 
+  void showError(OnError onError, Exception e) {
+    String message;
+    if(e is DioError) {
+      message = ErrorMessage.handleDioError(e);
+    }else if(e is RequestError) {
+      message = e.message;
+    }else {
+      message = e.toString();
+    }
+    if(onError != null) {
+      onError(message);
+    }else {
+      throw RequestError(message);
+    }
+  }
+
+  Future<T> get({OnSuccess<T> onSuccess, OnError onError}) async {
+    try {
+      Response<Map<String, dynamic>> response = await _dio.get(url, cancelToken: _token, queryParameters: queryParameters);
+      T data = jsonParser(response.data);
+
+      if(!intercept(data)) {
+        if(onSuccess != null) {
+          onSuccess(data);
+        }
+      }else {
+        throw RequestError("请求失效");
+      }
+      return data;
+    } catch(e) {
+      showError(onError, e);
+    }
+  }
+
+  // ignore: missing_return
   Future<T> post({OnSuccess<T> onSuccess, OnError onError}) async {
-    T data;
     try {
       Response<Map<String, dynamic>> response = await _dio.post(url,
           cancelToken: _token,
           queryParameters: queryParameters,
           data: this.data
       );
-
-      data = jsonParser(response.data);
-      if(onSuccess != null) {
-        onSuccess(data);
+      T data = jsonParser(response.data);
+      if(!intercept(data)) {
+        if(onSuccess != null) {
+          onSuccess(data);
+        }
+      }else {
+        throw RequestError("请求失效");
       }
-    } on DioError catch (e) {
-      if(onError != null) {
-        onError(ErrorMessage.handleDioError(e));
-      }
+      return data;
+    } catch(e) {
+      showError(onError, e);
     }
-    return Future<T>(()=>data);
   }
 
   Future<String> download({OnSuccess<String> onSuccess, OnProgress onProgress, OnError onError}) async {
@@ -120,12 +160,10 @@ class NetworkRequest<T> {
         onSuccess(saveFilePath);
       }
       data = saveFilePath;
-    } on DioError catch (e) {
-      if(onError != null) {
-        onError(ErrorMessage.handleDioError(e));
-      }
+    } catch(e) {
+      showError(onError, e);
     }
-    return Future<String>(()=>data);
+    return data;
   }
 
   Future<T> upload({OnSuccess<T> onSuccess, OnProgress onProgress, OnError onError}) async {
@@ -158,13 +196,13 @@ class NetworkRequest<T> {
       if(onSuccess != null) {
         onSuccess(data);
       }
-    } on DioError catch (e) {
-      if(onError != null) {
-        onError(ErrorMessage.handleDioError(e));
-      }
+    } catch(e) {
+      showError(onError, e);
     }
-    return Future<T>(()=>data);
+
+    return data;
   }
+
 
 }
 

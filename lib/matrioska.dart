@@ -15,6 +15,7 @@ export 'slidePopup/slide_popup_dialog.dart';
 export 'stateView/StateView.dart';
 export 'tree/tree_view.dart';
 export 'tree/tree_data.dart';
+export 'dialog/global_dialog.dart';
 
 export 'util/keyboard_util.dart';
 export 'util/snackbar_util.dart';

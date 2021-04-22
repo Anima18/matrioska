@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:matrioska/util/keyboard_util.dart';
 
@@ -10,6 +11,7 @@ enum DataState {
   success,//请求成功
   error, //请求失败
   empty, //请求数据为空
+  complete, //请求完成
 }
 
 class StatefulData<T>{
@@ -18,10 +20,9 @@ class StatefulData<T>{
   String loadingMessage; //请求信息
   String errorMessage; //请求错误信息
   int _progress;
+  bool consume = false;
 
   StatefulData(); //请求进度
-
-
 
   StatefulData.loading(String message) {
     state = DataState.loading;
@@ -44,6 +45,10 @@ class StatefulData<T>{
     errorMessage = "没有数据";
   }
 
+  StatefulData.complete() {
+    state = DataState.complete;
+  }
+
   StatefulData.progress(int value) {
     _progress = value;
     state = DataState.progress;
@@ -61,43 +66,42 @@ abstract class Indicator {
 }
 
 class StatefulDataMonitor<A> extends Selector0<StatefulData> {
-  final void Function(StatefulData) onSuccess;
-  final void Function(String) onError;
 
   StatefulDataMonitor({
     Key key,
-    @required this.onSuccess,
-    @required this.onError,
+    Function(StatefulData) onSuccess,
+    Function(String) onError,
     @required StatefulData Function(BuildContext, A) selector,
-    @required Widget child,
-    Indicator indicator,
+    @required ValueWidgetBuilder<StatefulData> builder,
   })  : assert(selector != null),
         super(
         key: key,
-        builder: (context, viewState, _) {
-          switch(viewState.state) {
-            case DataState.loading:
-              print(viewState.loadingMessage);
-
-              WidgetsBinding.instance.addPostFrameCallback((_){
-                indicator?.show(viewState.loadingMessage);
-              });
-              break;
-            case DataState.success:
-              indicator?.close();
-              KeyboardUtil.hide(context);
-              onSuccess(viewState);
-              break;
-            case DataState.error:
-              indicator?.close();
-              KeyboardUtil.hide(context);
-              onError(viewState.errorMessage);
-              break;
-            case DataState.progress:
-            // TODO: Handle this case.
-              break;
+        builder: (context, viewState, child) {
+          if(!viewState.consume) {
+            switch(viewState.state) {
+              case DataState.loading:
+                EasyLoading.show(status: viewState.loadingMessage);
+                break;
+              case DataState.success:
+                EasyLoading.dismiss();
+                break;
+              case DataState.error:
+                EasyLoading.dismiss();
+                break;
+              case DataState.progress:
+              // TODO: Handle this case.
+                break;
+              case DataState.empty:
+                // TODO: Handle this case.
+                break;
+              case DataState.complete:
+                EasyLoading.dismiss();
+                break;
+            }
+            viewState.consume = true;
           }
-          return child;
+
+          return builder(context, viewState, child);
         },
         selector: (context) => selector(context, Provider.of(context)),
       );

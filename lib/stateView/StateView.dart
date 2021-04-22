@@ -11,6 +11,7 @@ class StateView extends StatelessWidget {
   final OnRetry onRetry;
   final DataState viewState;
   final String errorMessage;
+  final double iconSize = 200;
 
   StateView(
       {@required this.child,
@@ -56,8 +57,8 @@ class StateView extends StatelessWidget {
             children: <Widget>[
               Image(
                 image: AssetImage("assets/error.png", package: "matrioska"),
-                width: 88,
-                height: 88,
+                width: iconSize,
+                height: iconSize,
               ),
               SizedBox(
                 height: 16,
@@ -86,8 +87,8 @@ class StateView extends StatelessWidget {
           children: <Widget>[
             Image(
               image: AssetImage("assets/not_data.png", package: "matrioska"),
-              width: 88,
-              height: 88,
+              width: iconSize,
+              height: iconSize,
             ),
             SizedBox(
               height: 16,
