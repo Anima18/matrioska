@@ -1,4 +1,3 @@
-
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -7,16 +6,20 @@ import 'error_message.dart';
 
 ///成功回调
 typedef void OnSuccess<T>(T data);
+
 ///错误回调
 typedef void OnError(String message);
+
 ///请求进度回调
 typedef void OnProgress(int progress);
+
 ///数据解析器
 typedef T JsonParser<T>(Map<String, dynamic> json);
+
 ///错误拦截器
 typedef bool ErrorInterceptor<T>(T data);
 
-final  Dio _dio = new Dio(BaseOptions(
+final Dio _dio = new Dio(BaseOptions(
   connectTimeout: 10000,
   receiveTimeout: 10000,
 ));
@@ -27,7 +30,6 @@ class RequestError implements Exception {
 }
 
 class HeaderInterceptor extends InterceptorsWrapper {
-
   final Map<String, String> requestHeaders;
 
   HeaderInterceptor(this.requestHeaders);
@@ -59,15 +61,16 @@ class NetworkRequest<T> {
 
   CancelToken _token;
 
-  NetworkRequest({@required this.url,
-    this.queryParameters,
-    this.data,
-    this.requestHeaders,
-    this.saveFilePath,
-    this.uploadFiles,
-    @required this.jsonParser,
-    this.errorInterceptor }) {
-    if(this.requestHeaders != null) {
+  NetworkRequest(
+      {@required this.url,
+      this.queryParameters,
+      this.data,
+      this.requestHeaders,
+      this.saveFilePath,
+      this.uploadFiles,
+      @required this.jsonParser,
+      this.errorInterceptor}) {
+    if (this.requestHeaders != null) {
       _dio.interceptors.add(HeaderInterceptor(requestHeaders));
     }
     /*(_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client){
@@ -79,66 +82,67 @@ class NetworkRequest<T> {
 
   bool intercept(T data) {
     bool isIntercept = false;
-    if(errorInterceptor != null) {
+    if (errorInterceptor != null) {
       isIntercept = errorInterceptor(data);
     }
     return isIntercept;
   }
 
-  void showError(OnError onError, Exception e) {
+  void handleError(OnError onError, Exception e) {
     String message;
-    if(e is DioError) {
+    if (e is DioError) {
       message = ErrorMessage.handleDioError(e);
-    }else if(e is RequestError) {
+    } else if (e is RequestError) {
       message = e.message;
-    }else {
+    } else {
       message = e.toString();
     }
-    if(onError != null) {
+    if (onError != null) {
       onError(message);
     }else {
       throw RequestError(message);
     }
+
   }
 
   Future<T> get({OnSuccess<T> onSuccess, OnError onError}) async {
-    try {
-      Response<Map<String, dynamic>> response = await _dio.get(url, cancelToken: _token, queryParameters: queryParameters);
-      T data = jsonParser(response.data);
+    return await _dio
+        .get(url, cancelToken: _token, queryParameters: queryParameters)
+        .then((response) {
+          T data = jsonParser(response.data);
 
-      if(!intercept(data)) {
-        if(onSuccess != null) {
-          onSuccess(data);
-        }
-      }else {
-        throw RequestError("请求失效");
-      }
-      return data;
-    } catch(e) {
-      showError(onError, e);
-    }
+          if (!intercept(data)) {
+            if (onSuccess != null) {
+              onSuccess(data);
+            }
+          } else {
+            throw RequestError("请求失效");
+          }
+          return data;
+        })
+        .catchError((e) {handleError(onError, e);});
+
   }
 
-  // ignore: missing_return
   Future<T> post({OnSuccess<T> onSuccess, OnError onError}) async {
-    try {
-      Response<Map<String, dynamic>> response = await _dio.post(url,
-          cancelToken: _token,
-          queryParameters: queryParameters,
-          data: this.data
-      );
-      T data = jsonParser(response.data);
-      if(!intercept(data)) {
-        if(onSuccess != null) {
-          onSuccess(data);
-        }
-      }else {
-        throw RequestError("请求失效");
-      }
-      return data;
-    } catch(e) {
-      showError(onError, e);
-    }
+    return await _dio
+        .post(url,
+            cancelToken: _token,
+            queryParameters: queryParameters,
+            data: this.data)
+        .then((response) {
+          T data = jsonParser(response.data);
+          if (!intercept(data)) {
+            if (onSuccess != null) {
+              onSuccess(data);
+            }
+          } else {
+            throw RequestError("请求失效");
+          }
+          return data;
+        })
+        .catchError((e) {handleError(onError, e);});
+
   }
 
   Future<String> download({OnSuccess<String> onSuccess, OnProgress onProgress, OnError onError}) async {
@@ -150,18 +154,18 @@ class NetworkRequest<T> {
         cancelToken: _token,
         onReceiveProgress: (int count, int total) {
           int progress = count * 100 ~/ total;
-          if(onProgress != null) {
+          if (onProgress != null) {
             onProgress(progress);
           }
         },
       );
 
-      if(onSuccess != null) {
+      if (onSuccess != null) {
         onSuccess(saveFilePath);
       }
       data = saveFilePath;
-    } catch(e) {
-      showError(onError, e);
+    } catch (e) {
+      handleError(onError, e);
     }
     return data;
   }
@@ -170,13 +174,12 @@ class NetworkRequest<T> {
     T data;
     try {
       FormData formData = FormData();
-      for(String filePath in uploadFiles) {
+      for (String filePath in uploadFiles) {
         //File file = new File(filePath);
-        String fileName = filePath.substring(filePath.lastIndexOf("/")+1);
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
         var mapEntry = MapEntry(
           "files[]",
-          await MultipartFile.fromFile(filePath,
-              filename: fileName),
+          await MultipartFile.fromFile(filePath, filename: fileName),
         );
 
         formData.files.add(mapEntry);
@@ -184,25 +187,21 @@ class NetworkRequest<T> {
 
       Response<Map<String, dynamic>> response = await _dio.post(url,
           cancelToken: _token,
-          data: formData,
-          onSendProgress: (int sent, int total) {
-            int progress = sent * 100 ~/ total;
-            if(onProgress != null) {
-              onProgress(progress);
-            }
-          });
+          data: formData, onSendProgress: (int sent, int total) {
+        int progress = sent * 100 ~/ total;
+        if (onProgress != null) {
+          onProgress(progress);
+        }
+      });
 
       data = jsonParser(response.data);
-      if(onSuccess != null) {
+      if (onSuccess != null) {
         onSuccess(data);
       }
-    } catch(e) {
-      showError(onError, e);
+    } catch (e) {
+      handleError(onError, e);
     }
 
     return data;
   }
-
-
 }
-

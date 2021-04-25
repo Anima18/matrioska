@@ -77,6 +77,7 @@ class StatefulDataMonitor<A> extends Selector0<StatefulData> {
         super(
         key: key,
         builder: (context, viewState, child) {
+          print(viewState.toString());
           if(!viewState.consume) {
             switch(viewState.state) {
               case DataState.loading:
