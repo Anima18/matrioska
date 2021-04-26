@@ -54,6 +54,10 @@ class NetworkRequest<T> {
 
   CancelToken _token;
 
+  static void setBaseUrl(String baseUrl) {
+    _dio.options.baseUrl = baseUrl;
+  }
+
   NetworkRequest({
       @required this.url,
       @required this.transformer,
