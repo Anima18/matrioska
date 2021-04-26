@@ -58,6 +58,14 @@ class NetworkRequest<T> {
     _dio.options.baseUrl = baseUrl;
   }
 
+  static void setProxy(String proxy) {
+    (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client){
+      client.findProxy = (uri){
+        return "PROXY $proxy";
+      };
+    };
+  }
+
   NetworkRequest({
       @required this.url,
       @required this.transformer,
@@ -69,11 +77,7 @@ class NetworkRequest<T> {
     if (this.requestHeaders != null) {
       _dio.interceptors.add(HeaderInterceptor(requestHeaders));
     }
-    /*(_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client){
-      client.findProxy = (uri){
-        return "PROXY 192.168.60.177:8888";
-      };
-    };*/
+
   }
 
   void handleError(Exception e) {
