@@ -19,7 +19,7 @@ class StatefulData<T>{
   T data;         //请求数据
   String loadingMessage; //请求信息
   String errorMessage; //请求错误信息
-  int _progress;
+  double progress;
   bool consume = false;
 
   StatefulData(); //请求进度
@@ -49,14 +49,14 @@ class StatefulData<T>{
     state = DataState.complete;
   }
 
-  StatefulData.progress(int value) {
-    _progress = value;
+  StatefulData.progress(double value) {
+    progress = value;
     state = DataState.progress;
   }
 
   @override
   String toString() {
-    return 'ViewState{state: $state, data: $data, loadingMessage: $loadingMessage, errorMessage: $errorMessage, _progress: $_progress}';
+    return 'ViewState{state: $state, data: $data, loadingMessage: $loadingMessage, errorMessage: $errorMessage, _progress: $progress}';
   }
 }
 
@@ -90,7 +90,11 @@ class StatefulDataMonitor<A> extends Selector0<StatefulData> {
                 EasyLoading.dismiss();
                 break;
               case DataState.progress:
-              // TODO: Handle this case.
+                WidgetsBinding.instance.addPostFrameCallback((_){
+                  EasyLoading.showProgress(viewState.progress,
+                      status: '${(viewState.progress * 100).toStringAsFixed(0)}%');
+                });
+
                 break;
               case DataState.empty:
                 // TODO: Handle this case.

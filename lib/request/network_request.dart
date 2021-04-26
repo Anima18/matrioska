@@ -11,13 +11,10 @@ typedef void OnSuccess<T>(T data);
 typedef void OnError(String message);
 
 ///请求进度回调
-typedef void OnProgress(int progress);
+typedef void OnProgress(double progress);
 
 ///数据解析器
-typedef T JsonParser<T>(Map<String, dynamic> json);
-
-///错误拦截器
-typedef bool ErrorInterceptor<T>(T data);
+typedef T Transformer<T>(Map<String, dynamic> json);
 
 final Dio _dio = new Dio(BaseOptions(
   connectTimeout: 10000,
@@ -48,28 +45,23 @@ class NetworkRequest<T> {
   final Map<String, dynamic> queryParameters;
   //请求body
   final Map<String, dynamic> data;
-  //文件保存地址
-  final String saveFilePath;
   //请求头
   Map<String, String> requestHeaders;
   //文件上传数据
   final List<String> uploadFiles;
   //json数据解析
-  final JsonParser jsonParser;
-  //成功请求错误拦截器
-  final ErrorInterceptor errorInterceptor;
+  final Transformer transformer;
 
   CancelToken _token;
 
-  NetworkRequest(
-      {@required this.url,
+  NetworkRequest({
+      @required this.url,
+      @required this.transformer,
       this.queryParameters,
       this.data,
       this.requestHeaders,
-      this.saveFilePath,
       this.uploadFiles,
-      @required this.jsonParser,
-      this.errorInterceptor}) {
+      }) {
     if (this.requestHeaders != null) {
       _dio.interceptors.add(HeaderInterceptor(requestHeaders));
     }
@@ -80,15 +72,7 @@ class NetworkRequest<T> {
     };*/
   }
 
-  bool intercept(T data) {
-    bool isIntercept = false;
-    if (errorInterceptor != null) {
-      isIntercept = errorInterceptor(data);
-    }
-    return isIntercept;
-  }
-
-  void handleError(OnError onError, Exception e) {
+  void handleError(Exception e) {
     String message;
     if (e is DioError) {
       message = ErrorMessage.handleDioError(e);
@@ -97,77 +81,42 @@ class NetworkRequest<T> {
     } else {
       message = e.toString();
     }
-    if (onError != null) {
-      onError(message);
-    }else {
-      throw RequestError(message);
-    }
-
+    throw RequestError(message);
   }
 
-  Future<T> get({OnSuccess<T> onSuccess, OnError onError}) async {
+  Future<T> get() async {
     return await _dio
         .get(url, cancelToken: _token, queryParameters: queryParameters)
-        .then((response) {
-          T data = jsonParser(response.data);
-
-          if (!intercept(data)) {
-            if (onSuccess != null) {
-              onSuccess(data);
-            }
-          } else {
-            throw RequestError("请求失效");
-          }
-          return data;
-        })
-        .catchError((e) {handleError(onError, e);});
+        .then((response) => transformer(response.data))
+        .catchError((e) {handleError(e);});
 
   }
 
-  Future<T> post({OnSuccess<T> onSuccess, OnError onError}) async {
+  Future<T> post() async {
     return await _dio
         .post(url,
             cancelToken: _token,
             queryParameters: queryParameters,
             data: this.data)
-        .then((response) {
-          T data = jsonParser(response.data);
-          if (!intercept(data)) {
-            if (onSuccess != null) {
-              onSuccess(data);
-            }
-          } else {
-            throw RequestError("请求失效");
-          }
-          return data;
-        })
-        .catchError((e) {handleError(onError, e);});
+        .then((response) => transformer(response.data))
+        .catchError((e) {handleError(e);});
 
   }
 
-  Future<String> download({OnSuccess<String> onSuccess, OnProgress onProgress, OnError onError}) async {
-    String data;
-    try {
-      await _dio.download(
-        url,
-        saveFilePath,
-        cancelToken: _token,
-        onReceiveProgress: (int count, int total) {
-          int progress = count * 100 ~/ total;
-          if (onProgress != null) {
+  Future<String> download({@required String savePath, OnProgress onProgress}) async {
+    return await _dio.download(
+      url,
+      savePath,
+      cancelToken: _token,
+      onReceiveProgress: (int count, int total) {
+        double progress = (count * 100 ~/ total).toDouble();
+        if (onProgress != null) {
             onProgress(progress);
           }
-        },
-      );
-
-      if (onSuccess != null) {
-        onSuccess(saveFilePath);
-      }
-      data = saveFilePath;
-    } catch (e) {
-      handleError(onError, e);
-    }
-    return data;
+      },
+    ).then((response) {
+      return savePath;
+    }).catchError((e) {handleError(e);});
   }
 
   Future<T> upload({OnSuccess<T> onSuccess, OnProgress onProgress, OnError onError}) async {
@@ -188,18 +137,18 @@ class NetworkRequest<T> {
       Response<Map<String, dynamic>> response = await _dio.post(url,
           cancelToken: _token,
           data: formData, onSendProgress: (int sent, int total) {
-        int progress = sent * 100 ~/ total;
+            double progress = (sent * 100 ~/ total).toDouble();;
         if (onProgress != null) {
           onProgress(progress);
         }
       });
 
-      data = jsonParser(response.data);
+      data = transformer(response.data);
       if (onSuccess != null) {
         onSuccess(data);
       }
     } catch (e) {
-      handleError(onError, e);
+      handleError(e);
     }
 
     return data;
