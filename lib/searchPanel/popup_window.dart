@@ -9,7 +9,7 @@ const Duration _kWindowDuration = Duration(milliseconds: _windowPopupDuration);
 
 class PopupWindowButton<T> extends StatefulWidget {
   const PopupWindowButton({
-    Key key,
+    Key? key,
     this.child,
     this.window,
     this.offset = Offset.zero,
@@ -19,7 +19,7 @@ class PopupWindowButton<T> extends StatefulWidget {
   }) : super(key: key);
 
   /// 显示按钮button
-  final Widget child;
+  final Widget? child;
 
   /// window 出现的位置。
   final Offset offset;
@@ -28,7 +28,7 @@ class PopupWindowButton<T> extends StatefulWidget {
   final double elevation;
 
   /// 需要显示的window
-  final MenuView window;
+  final MenuView? window;
 
   /// 按钮按钮后到显示window 出现的时间
   final int duration;
@@ -42,19 +42,19 @@ class PopupWindowButton<T> extends StatefulWidget {
 }
 
 void showWindow<T>({
-  @required BuildContext context,
-  RelativeRect position,
-  @required Widget window,
+  required BuildContext context,
+  RelativeRect? position,
+  required Widget? window,
   double elevation = 6.0,
   int duration = _windowPopupDuration,
-  String semanticLabel,
-  MaterialType type,
+  String? semanticLabel,
+  MaterialType? type,
 }) {
   Navigator.push(
     context,
     _PopupWindowRoute<T>(
         position: position,
-        child: window,
+        child: window as MenuView?,
         elevation: elevation,
         duration: duration,
         semanticLabel: semanticLabel,
@@ -66,8 +66,8 @@ void showWindow<T>({
 
 class _PopupWindowButtonState<T> extends State<PopupWindowButton> {
   void _showWindow() {
-    final RenderBox button = context.findRenderObject();
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context)!.context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(widget.offset, ancestor: overlay),
@@ -115,31 +115,31 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
         reverseCurve: const Interval(0.0, _kWindowCloseIntervalEnd));
   }
 
-  final RelativeRect position;
-  final MenuView child;
-  final double elevation;
-  final ThemeData theme;
-  final String semanticLabel;
+  final RelativeRect? position;
+  final MenuView? child;
+  final double? elevation;
+  final ThemeData? theme;
+  final String? semanticLabel;
   @override
-  final String barrierLabel;
-  final int duration;
-  final MaterialType type;
+  final String? barrierLabel;
+  final int? duration;
+  final MaterialType? type;
 
   @override
   Duration get transitionDuration =>
-      duration == 0 ? _kWindowDuration : Duration(milliseconds: duration);
+      duration == 0 ? _kWindowDuration : Duration(milliseconds: duration!);
 
   @override
   bool get barrierDismissible => true;
 
   @override
-  Color get barrierColor => null;
+  Color? get barrierColor => null;
 
 
   @override
   TickerFuture didPush() {
     print("didPush");
-    child.onShow();
+    child!.onShow();
     return super.didPush();
   }
 
@@ -147,7 +147,7 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
   @override
   Future<RoutePopDisposition> willPop() {
     print("willPop");
-    child.onDismiss();
+    child!.onDismiss();
     return super.willPop();
   }
   @override
@@ -187,12 +187,12 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
           child: AnimatedBuilder(
               child: child,
               animation: animation,
-              builder: (BuildContext context, Widget child) {
+              builder: (BuildContext context, Widget? child) {
                 return Opacity(
                   opacity: opacity.evaluate(animation),
                   child: Material(
-                    type: type,
-                    elevation: elevation,
+                    type: type!,
+                    elevation: elevation!,
                     child: child,
                   ),
                 );
@@ -207,7 +207,7 @@ class _PopupWindowLayout extends SingleChildLayoutDelegate {
   _PopupWindowLayout(this.position);
 
   // Rectangle of underlying button, relative to the overlay's dimensions.
-  final RelativeRect position;
+  final RelativeRect? position;
 
   // We put the child wherever position specifies, so long as it will fit within
   // the specified parent size padded (inset) by 8. If necessary, we adjust the
@@ -227,7 +227,7 @@ class _PopupWindowLayout extends SingleChildLayoutDelegate {
     // getConstraintsForChild.
 
     // Find the ideal vertical position.
-    double y = position.top;
+    double y = position!.top;
 
     // Find the ideal horizontal position.
     double x = 0;

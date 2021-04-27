@@ -5,12 +5,12 @@ import 'pill_gesture.dart';
 class SlideDialog extends StatefulWidget {
   final Widget child;
   final Color backgroundColor;
-  final Color pillColor;
+  final Color? pillColor;
 
   SlideDialog({
-    @required this.child,
-    @required this.pillColor,
-    @required this.backgroundColor,
+    required this.child,
+    required this.pillColor,
+    required this.backgroundColor,
   });
 
   @override
@@ -42,8 +42,8 @@ class _SlideDialogState extends State<SlideDialog> {
             width: deviceWidth,
             height: deviceHeight / 1.5,
             child: Material(
-              color: widget.backgroundColor ??
-                  Theme.of(context).dialogBackgroundColor,
+              color: widget.backgroundColor /*??
+                  Theme.of(context).dialogBackgroundColor*/,
               elevation: 24.0,
               type: MaterialType.card,
               child: Column(

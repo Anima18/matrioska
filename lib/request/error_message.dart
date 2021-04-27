@@ -5,11 +5,11 @@ class ErrorMessage {
   static String handleDioError(DioError err) {
     String message = err.message;
     DioErrorType type = err.type;
-    if (type == DioErrorType.CONNECT_TIMEOUT ||
-        type == DioErrorType.RECEIVE_TIMEOUT) {
+    if (type == DioErrorType.connectTimeout ||
+        type == DioErrorType.receiveTimeout) {
       message = "请求服务超时!";
-    } else if (type == DioErrorType.RESPONSE) {
-      int statusCode = err.response.statusCode;
+    } else if (type == DioErrorType.response) {
+      int statusCode = err.response!.statusCode!;
       if (statusCode >= 300 && statusCode < 400) {
         message = "请求重定向";
       } else if (statusCode >= 400 && statusCode < 500) {
@@ -17,9 +17,9 @@ class ErrorMessage {
       } else if (statusCode >= 500 && statusCode < 600) {
         message = "服务器遇到错误，无法完成请求";
       }
-    } else if (type == DioErrorType.CANCEL) {
+    } else if (type == DioErrorType.cancel) {
       message = "你取消了请求!";
-    } else if (type == DioErrorType.DEFAULT) {
+    } else if (type == DioErrorType.other) {
       if (err.message.contains("FormatException")) {
         message = "请求URL格式不正确!";
       } else if (err.message.contains("Connection failed") || err.message.contains("Connection refused")) {

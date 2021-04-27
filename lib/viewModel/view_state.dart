@@ -15,11 +15,11 @@ enum DataState {
 }
 
 class StatefulData<T>{
-  DataState state;    //请求状态
-  T data;         //请求数据
-  String loadingMessage; //请求信息
-  String errorMessage; //请求错误信息
-  double progress;
+  DataState? state;    //请求状态
+  T? data;         //请求数据
+  String? loadingMessage; //请求信息
+  String? errorMessage; //请求错误信息
+  double progress = 0.0;
   bool consume = false;
 
   StatefulData(); //请求进度
@@ -68,11 +68,11 @@ abstract class Indicator {
 class StatefulDataMonitor<A> extends Selector0<StatefulData> {
 
   StatefulDataMonitor({
-    Key key,
-    Function(StatefulData) onSuccess,
-    Function(String) onError,
-    @required StatefulData Function(BuildContext, A) selector,
-    @required ValueWidgetBuilder<StatefulData> builder,
+    Key? key,
+    Function(StatefulData)? onSuccess,
+    Function(String)? onError,
+    required StatefulData Function(BuildContext, A) selector,
+    required ValueWidgetBuilder<StatefulData> builder,
   })  : assert(selector != null),
         super(
         key: key,
@@ -81,7 +81,7 @@ class StatefulDataMonitor<A> extends Selector0<StatefulData> {
           if(!viewState.consume) {
             switch(viewState.state) {
               case DataState.loading:
-                EasyLoading.show(status: viewState.loadingMessage);
+                EasyLoading.show(status: viewState.loadingMessage, maskType: EasyLoadingMaskType.clear);
                 break;
               case DataState.success:
                 EasyLoading.dismiss();
@@ -90,9 +90,9 @@ class StatefulDataMonitor<A> extends Selector0<StatefulData> {
                 EasyLoading.dismiss();
                 break;
               case DataState.progress:
-                WidgetsBinding.instance.addPostFrameCallback((_){
+                WidgetsBinding.instance!.addPostFrameCallback((_){
                   EasyLoading.showProgress(viewState.progress,
-                      status: '${(viewState.progress * 100).toStringAsFixed(0)}%');
+                      status: '${(viewState.progress * 100).toStringAsFixed(0)}%', maskType: EasyLoadingMaskType.clear);
                 });
 
                 break;

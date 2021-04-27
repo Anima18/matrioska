@@ -19,7 +19,7 @@ abstract class ListItemCreator<T> {
 }
 
 class RefreshController {
-  RefreshListViewState _state;
+  RefreshListViewState? _state;
 
   void bindState(RefreshListViewState state) {
     this._state = state;
@@ -27,7 +27,7 @@ class RefreshController {
 
   void callRefresh() {
     if (_state != null) {
-      _state.refreshData();
+      _state!.refreshData();
     }
   }
 }
@@ -40,18 +40,18 @@ class RefreshListView<T> extends StatefulWidget {
   final RefreshController controller;
 
   const RefreshListView(
-      {@required this.itemViewCreator,
-      @required this.onItemClick,
-      @required this.onDataRequest,
+      {required this.itemViewCreator,
+      required this.onItemClick,
+      required this.onDataRequest,
       this.pageSize = 30,
-      @required this.controller});
+      required this.controller});
 
   @override
   RefreshListViewState createState() => new RefreshListViewState();
 }
 
 class RefreshListViewState<T> extends State<RefreshListView> {
-  var _dataList = List<T>();
+  var _dataList = <T>[];
   _ViewStatus _viewStatus = _ViewStatus.refresh;
   ScrollController _controller = ScrollController();
 

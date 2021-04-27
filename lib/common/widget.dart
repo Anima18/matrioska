@@ -7,7 +7,7 @@ class SearchPanelButton extends StatelessWidget {
 
   final String title;
   final VoidCallback onPressed;
-  SearchPanelButton({this.title, this.onPressed});
+  SearchPanelButton({required this.title, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

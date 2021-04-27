@@ -10,7 +10,7 @@ import 'menu_view_list.dart';
 import 'menu_view_tree.dart';
 
 class MenuViewFactory {
-    static MenuView of(MenuItem menuItem, SearchBarCallback callback, Color activeColor) {
+    static MenuView? of(MenuItem menuItem, SearchBarCallback callback, Color activeColor) {
       if(menuItem is InputMenuItem) {
         return InputMenuView(menuItem, callback);
       }else if(menuItem is ListMenuItem) {

@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:matrioska/viewModel/view_state.dart';
 
 typedef OnRetry = void Function();
-typedef OnSuccessBuilder = Widget Function(BuildContext context, Widget child);
+typedef OnSuccessBuilder = Widget Function(BuildContext context, Widget? child);
 
 class StateView extends StatelessWidget {
-  Widget _loadingView;
-  Widget _errorView;
-  Widget _emptyView;
+  late Widget _loadingView;
+  late Widget _errorView;
+  late Widget _emptyView;
   final OnSuccessBuilder builder;
-  final Widget child;
-  final OnRetry onRetry;
+  final Widget? child;
+  final OnRetry? onRetry;
   final DataState viewState;
-  final String errorMessage;
+  final String? errorMessage;
   final double iconSize = 200;
 
   StateView(
       {
-        @required this.builder,
+        required this.builder,
         this.child,
         this.onRetry,
         this.viewState : DataState.loading,
-        @required this.errorMessage,
-        Widget loadingView,
-        Widget errorView,
-        Widget emptyView}) {
+        required this.errorMessage,
+        Widget? loadingView,
+        Widget? errorView,
+        Widget? emptyView}) {
     _loadingView  = loadingView == null ? _getLoadingView() : loadingView;
     _errorView  = errorView == null ? _getErrorView() : errorView;
     _emptyView  = emptyView == null ? _getEmptyView() : emptyView;
@@ -70,7 +70,7 @@ class StateView extends StatelessWidget {
                 height: 16,
               ),
               Text(
-                errorMessage != null ? errorMessage : "",
+                errorMessage != null ? errorMessage! : "",
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               FlatButton(
@@ -116,7 +116,7 @@ class StateView extends StatelessWidget {
 
   void _retry() {
     if (onRetry != null) {
-      onRetry();
+      onRetry!();
     }
   }
 }

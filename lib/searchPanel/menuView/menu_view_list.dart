@@ -38,7 +38,7 @@ class ListMenuView extends MenuView {
   }
 
   @override
-  void setValue(String value) {
+  void setValue(String? value) {
     menuItem.setValue(value);
   }
 
@@ -50,14 +50,14 @@ class ListMenuView extends MenuView {
 
 class _ListState extends State<ListMenuView> implements DataChangeCallback {
   final ListMenuItem menuItem;
-  BuildContext context;
-  ScrollController controller;
+  late BuildContext context;
+  ScrollController? controller;
 
   _ListState(this.menuItem) {
 
     controller  = ScrollController();
-    controller.addListener(() {
-      menuItem.scrollOffset = controller.offset;
+    controller!.addListener(() {
+      menuItem.scrollOffset = controller!.offset;
     });
   }
 
@@ -65,13 +65,13 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
   void initState() {
     requestData();
     //注册一个回调函数yourCallback
-    WidgetsBinding.instance.addPostFrameCallback((_) => controller.jumpTo(menuItem.scrollOffset));
+    WidgetsBinding.instance!.addPostFrameCallback((_) => controller!.jumpTo(menuItem.scrollOffset));
   }
 
   void requestData() {
     if (menuItem.dataListener != null) {
       if (menuItem.viewStatus == DataState.loading) {
-        menuItem.dataListener(this);
+        menuItem.dataListener!(this);
       }
     } else {
       menuItem.viewStatus = DataState.success;
@@ -94,10 +94,10 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
             child: StateView(
               viewState: menuItem.viewStatus,
               errorMessage: menuItem.message,
-              child: buildListView(),
+              builder: (context, _) => buildListView(),
               onRetry: () {
                 print("stateView retry");
-                menuItem.dataListener(this);
+                menuItem.dataListener!(this);
               },
             ),
           ),
@@ -171,7 +171,7 @@ class _ListState extends State<ListMenuView> implements DataChangeCallback {
     );
   }
 
-  void itemClick(ListItem listItem) {
+  void itemClick(ListItem? listItem) {
     setState(() {
       menuItem.dataList.forEach((element) {
         element.selected = false;

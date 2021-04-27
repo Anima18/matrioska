@@ -6,7 +6,7 @@ class TreeData {
   final dynamic data;
   bool expanded = false;
   bool selected = false;
-  List<TreeData> children;
+  List<TreeData>? children;
 
   TreeData(this.code, this.title, this.data, {this.expanded = false}) : assert(code != null && code != null && title != null) ;
 

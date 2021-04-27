@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 class DateUtil {
-  static DateTime parse(String value, String formatString) {
+  static DateTime? parse(String? value, String? formatString) {
     if(value == null || value.isEmpty) {
       return null;
     }
@@ -9,18 +9,18 @@ class DateUtil {
     return formatter.parse(value);
   }
 
-  static String format(DateTime dateTime, String formatString) {
+  static String format(DateTime dateTime, String? formatString) {
     var formatter =  DateFormat(formatString);
     return formatter.format(dateTime);
   }
 
-  static String zero(DateTime dateTime, String formatString) {
+  static String zero(DateTime dateTime, String? formatString) {
     var zeroDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day, 0, 0, 0, 0, 0);
     var formatter =  DateFormat(formatString);
     return formatter.format(zeroDateTime);
   }
 
-  static String last(DateTime dateTime, String formatString) {
+  static String last(DateTime dateTime, String? formatString) {
     var lastDateTime = DateTime(dateTime.year, dateTime.month, dateTime.day, 23, 59, 59, 999, 999);
     var formatter =  DateFormat(formatString);
     return formatter.format(lastDateTime);

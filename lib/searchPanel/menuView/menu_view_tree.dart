@@ -39,7 +39,7 @@ class TreeMenuView extends MenuView {
   }
 
   @override
-  void setValue(String value) {
+  void setValue(String? value) {
     menuItem.setValue(value);
   }
 
@@ -52,7 +52,7 @@ class TreeMenuView extends MenuView {
 class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallback {
 
   final TreeMenuItem menuItem;
-  BuildContext context;
+  late BuildContext context;
   _TreeMenuState(this.menuItem);
 
   @override
@@ -82,7 +82,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
             child: StateView(
               viewState: menuItem.viewStatus,
               errorMessage: menuItem.message,
-              child: buildTreeView(),
+              builder: (context, _) =>  buildTreeView(),
               onRetry: () {
                 print("stateView retry");
                 menuItem.dataListener(this);
@@ -120,7 +120,7 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
               icon: Image(
                 image: AssetImage("assets/ic_folder.png", package: "matrioska"),
               ),
-              iconSize: 10,
+              iconSize: 10, onPressed: () {  },
             ),
             titleOnTap: (TreeData treeData) {
               widget.setText(treeData.title);

@@ -8,17 +8,17 @@ class MenuItem {
   final String code;
   final String name;
   String text;
-  List<String> valueList;
-  MenuItem(this.code, this.name) : this.text = "", this.selected = false, this.valueList = List();
+  List<String?> valueList;
+  MenuItem(this.code, this.name) : this.text = "", this.selected = false, this.valueList = [];
 
-  void setValue(String value) {
+  void setValue(String? value) {
     valueList.clear();
     if(value != null && value.isNotEmpty) {
       valueList.add(value);
     }
   }
 
-  void addValue(String value) {
+  void addValue(String? value) {
     valueList.add(value);
   }
 
@@ -56,10 +56,10 @@ class ListItem{
 }
 
 class ListMenuItem extends MenuItem {
-  List<ListItem> dataList = List();
-  OnRequestDataListener dataListener;
+  List<ListItem> dataList = [];
+  OnRequestDataListener? dataListener;
   DataState viewStatus = DataState.loading;
-  String message;
+  String? message;
   ///当前树列表滚动的位置
   double scrollOffset = 0.0;
 
@@ -112,9 +112,9 @@ abstract class TreeDataChangeCallback {
 }
 class TreeMenuItem extends MenuItem {
   final OnRequestTreeDataListener dataListener;
-  List<TreeData> dataList = List();
+  List<TreeData> dataList = [];
   DataState viewStatus = DataState.loading;
-  String message;
+  String? message;
   ///当前树列表滚动的位置
   double scrollOffset = 0.0;
 
@@ -124,7 +124,7 @@ class TreeMenuItem extends MenuItem {
     treeDataList.forEach((element) {
       element.selected = false;
       if(element.children != null) {
-        clear(element.children);
+        clear(element.children!);
       }
     });
   }

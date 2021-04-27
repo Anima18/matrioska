@@ -11,16 +11,16 @@ class TreeNode extends StatefulWidget {
   final List<Widget> children;
 
   final TreeData data;
-  final IconButton leadingIcon;
-  final IconButton childIcon;
+  final IconButton? leadingIcon;
+  final IconButton? childIcon;
   final IconButton trailing;
 
-  final OnTreeItemClick titleOnTap;
-  final Function leadingOnTap;
-  final Function trailingOnTap;
+  final OnTreeItemClick? titleOnTap;
+  final Function? leadingOnTap;
+  final Function? trailingOnTap;
 
   const TreeNode({
-    @required this.data,
+    required this.data,
     this.level = 0,
     this.expaned = false,
     this.offsetLeft = 24.0,
@@ -45,7 +45,7 @@ class _TreeNodeState extends State<TreeNode>
     with SingleTickerProviderStateMixin {
   bool _isExpaned = false;
 
-  AnimationController _rotationController;
+  late AnimationController _rotationController;
   final Tween<double> _turnsTween = Tween<double>(begin: 0.0, end: -0.5);
 
   initState() {
@@ -71,7 +71,7 @@ class _TreeNodeState extends State<TreeNode>
           child: InkWell(
             onTap: () {
               if (widget.titleOnTap != null && widget.titleOnTap is OnTreeItemClick) {
-                widget.titleOnTap(widget.data);
+                widget.titleOnTap!(widget.data);
               }
             },
             child: Row(
@@ -83,11 +83,11 @@ class _TreeNodeState extends State<TreeNode>
                       onTap: () {
                         if (widget.leadingOnTap != null &&
                             widget.leadingOnTap is Function) {
-                          widget.leadingOnTap();
+                          widget.leadingOnTap!();
                         }
                       },
                       child: Center(
-                        child: widget.childIcon ?? SizedBox(width:  widget.leadingIcon.iconSize ,),
+                        child: widget.childIcon ?? SizedBox(width:  widget.leadingIcon!.iconSize ,),
                       ),
                     ),
                 ),
@@ -97,7 +97,7 @@ class _TreeNodeState extends State<TreeNode>
                     onTap: () {
                       if (widget.leadingOnTap != null &&
                           widget.leadingOnTap is Function) {
-                        widget.leadingOnTap();
+                        widget.leadingOnTap!();
                       }
                     },
                     child: Center(
@@ -139,17 +139,17 @@ class _TreeNodeState extends State<TreeNode>
                           widget.data.expanded = _isExpaned;
                           if (widget.trailingOnTap != null &&
                               widget.trailingOnTap is Function) {
-                            widget.trailingOnTap();
+                            widget.trailingOnTap!();
                           }
                         });
                       },
                       child: RotationTransition(
-                        child: widget.trailing ??
+                        child: widget.trailing, /*??
                             const IconButton(
                               icon: Icon(Icons.expand_more),
                               iconSize: 16,
                               onPressed: null,
-                            ),
+                            ),*/
                         turns: _turnsTween.animate(_rotationController),
                       ),
                     ),

@@ -9,17 +9,17 @@ class TreeView extends StatefulWidget {
   final List<TreeData> data;
 
   final double offsetLeft;
-  final IconButton leadingIcon;
-  final IconButton childIcon;
-  final Function titleOnTap;
-  final Function leadingOnTap;
-  final Function trailingOnTap;
+  final IconButton? leadingIcon;
+  final IconButton? childIcon;
+  final Function? titleOnTap;
+  final Function? leadingOnTap;
+  final Function? trailingOnTap;
   final double scrollOffset;
-  final ScrollListener scrollListener;
+  final ScrollListener? scrollListener;
 
 
   const TreeView({
-    @required this.data,
+    required this.data,
     this.leadingIcon,
     this.childIcon,
     this.offsetLeft = 24.0,
@@ -41,7 +41,7 @@ class TreeView extends StatefulWidget {
 class TreeViewState extends State<TreeView> {
 
   void itemClick(TreeData treeData) {
-    widget.titleOnTap(treeData);
+    widget.titleOnTap!(treeData);
     setState(() {
       clearSelected(widget.data);
       treeData.selected = true;
@@ -51,12 +51,12 @@ class TreeViewState extends State<TreeView> {
     list.forEach((element) {
       element.selected = false;
       if(element.children != null) {
-        clearSelected(element.children);
+        clearSelected(element.children!);
       }
     });
   }
 
-  List<TreeNode> _geneTreeNodes(List<TreeData> list) {
+  List<TreeNode> _geneTreeNodes(List<TreeData>? list) {
 
     List treeNodes = <TreeNode>[];
     if(list != null) {
@@ -79,17 +79,17 @@ class TreeViewState extends State<TreeView> {
       }
     }
 
-    return treeNodes;
+    return treeNodes as List<TreeNode>;
   }
 
-  ScrollController controller;
+  ScrollController? controller;
 
 
   TreeViewState() {
     controller  = ScrollController();
-    controller.addListener(() {
+    controller!.addListener(() {
       if(widget.scrollListener != null) {
-        widget.scrollListener(controller.offset);
+        widget.scrollListener!(controller!.offset);
       }
     });
   }
@@ -97,7 +97,7 @@ class TreeViewState extends State<TreeView> {
   @override
   void initState() {
     //注册一个回调函数yourCallback
-    WidgetsBinding.instance.addPostFrameCallback((_) => controller.jumpTo(widget.scrollOffset));
+    WidgetsBinding.instance!.addPostFrameCallback((_) => controller!.jumpTo(widget.scrollOffset));
   }
 
   @override

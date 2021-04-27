@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ typedef void OnError(String message);
 typedef void OnProgress(double progress);
 
 ///数据解析器
-typedef T Transformer<T>(Map<String, dynamic> json);
+typedef T Transformer<T>(Map<String, dynamic>? json);
 
 final Dio _dio = new Dio(BaseOptions(
   connectTimeout: 10000,
@@ -27,14 +29,15 @@ class RequestError implements Exception {
 }
 
 class HeaderInterceptor extends InterceptorsWrapper {
-  final Map<String, String> requestHeaders;
+  final Map<String, String>? requestHeaders;
 
   HeaderInterceptor(this.requestHeaders);
 
+
   @override
-  Future onRequest(RequestOptions options) {
-    options.headers.addAll(requestHeaders);
-    return super.onRequest(options);
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    options.headers.addAll(requestHeaders!);
+    super.onRequest(options, handler);
   }
 }
 
@@ -42,17 +45,17 @@ class NetworkRequest<T> {
   //请求地址
   final String url;
   //请求参数
-  final Map<String, dynamic> queryParameters;
+  final Map<String, dynamic>? queryParameters;
   //请求body
-  final Map<String, dynamic> data;
+  final Map<String, dynamic>? data;
   //请求头
-  Map<String, String> requestHeaders;
+  Map<String, String>? requestHeaders;
   //文件上传数据
-  final List<String> uploadFiles;
+  final List<String>? uploadFiles;
   //json数据解析
   final Transformer transformer;
 
-  CancelToken _token;
+  CancelToken? _token;
 
   static void setBaseUrl(String baseUrl) {
     _dio.options.baseUrl = baseUrl;
@@ -67,8 +70,8 @@ class NetworkRequest<T> {
   }
 
   NetworkRequest({
-      @required this.url,
-      @required this.transformer,
+      required this.url,
+      required this.transformer,
       this.queryParameters,
       this.data,
       this.requestHeaders,
@@ -93,25 +96,25 @@ class NetworkRequest<T> {
   }
 
   Future<T> get() async {
-    return await _dio
+    return await (_dio
         .get(url, cancelToken: _token, queryParameters: queryParameters)
         .then((response) => transformer(response.data))
-        .catchError((e) {handleError(e);});
+        .catchError((e) {handleError(e);}));
 
   }
 
   Future<T> post() async {
-    return await _dio
+    return await (_dio
         .post(url,
             cancelToken: _token,
             queryParameters: queryParameters,
             data: this.data)
         .then((response) => transformer(response.data))
-        .catchError((e) {handleError(e);});
+        .catchError((e) {handleError(e);}));
 
   }
 
-  Future<String> download({@required String savePath, OnProgress onProgress}) async {
+  Future<String> download({required String savePath, OnProgress? onProgress}) async {
     return await _dio.download(
       url,
       savePath,
@@ -127,11 +130,11 @@ class NetworkRequest<T> {
     }).catchError((e) {handleError(e);});
   }
 
-  Future<T> upload({OnSuccess<T> onSuccess, OnProgress onProgress, OnError onError}) async {
-    T data;
+  /*Future<T?> upload({OnSuccess<T?>? onSuccess, OnProgress? onProgress, OnError? onError}) async {
+    T? data;
     try {
       FormData formData = FormData();
-      for (String filePath in uploadFiles) {
+      for (String filePath in uploadFiles!) {
         //File file = new File(filePath);
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
         var mapEntry = MapEntry(
@@ -160,5 +163,5 @@ class NetworkRequest<T> {
     }
 
     return data;
-  }
+  }*/
 }

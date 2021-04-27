@@ -38,7 +38,7 @@ class DateIntervalMenuView extends MenuView {
   }
 
   @override
-  void setValue(String value) {
+  void setValue(String? value) {
     menuItem.addValue(value);
   }
 
@@ -50,9 +50,9 @@ class DateIntervalMenuView extends MenuView {
 
 class _DateIntervalState extends State<DateIntervalMenuView> {
 
-  BuildContext context;
-  String customBeginTime, customEndTime;
-  String dateFormatValue;
+  late BuildContext context;
+  String? customBeginTime, customEndTime;
+  String? dateFormatValue;
 
 
   @override
@@ -87,7 +87,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
                           var view = Container(
                             height: 44,
                             child: Center(
-                                child: Text(listItemIndexOf(index).code, style: TextStyle(color: listItemIndexOf(index).selected ? widget.activeColor : Colors.black),),
+                                child: Text(listItemIndexOf(index)!.code, style: TextStyle(color: listItemIndexOf(index)!.selected ? widget.activeColor : Colors.black),),
 
                             ),
                             decoration: BoxDecoration(
@@ -124,7 +124,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
                         Container(child: Text("从:"), alignment: Alignment.centerLeft, padding: EdgeInsets.fromLTRB(0, 0, 6, 0),),
                         Expanded(
                           child: OutlineButton(
-                            child: Text(getBeginTime(), style: TextStyle(fontSize: 12,),),
+                            child: Text(getBeginTime()!, style: TextStyle(fontSize: 12,),),
                             onPressed: () {
                               selectBeginTime();
                             },
@@ -133,7 +133,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
                         Container(child: Text("至:"), alignment: Alignment.centerLeft, padding: EdgeInsets.fromLTRB(6, 0, 6, 0),),
                         Expanded(
                           child: OutlineButton(
-                            child: Text(getEndTime(), style: TextStyle(fontSize: 12,),),
+                            child: Text(getEndTime()!, style: TextStyle(fontSize: 12,),),
                             onPressed: () {
                               selectEndTime();
                             },
@@ -245,7 +245,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
   void listItemClick(int index) {
     widget.menuItem.valueList.clear();
 
-    ListItem listItem = listItemIndexOf(index);
+    ListItem? listItem = listItemIndexOf(index);
     setState(() {
       widget.menuItem.dataList.forEach((element) {
         element.selected = false;
@@ -288,7 +288,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
     widget.onSearch();
   }
 
-  ListItem listItemIndexOf(int index) {
+  ListItem? listItemIndexOf(int index) {
     List<ListItem> dataList = widget.menuItem.dataList;
     if(0 <= index && index < dataList.length) {
       return dataList[index];
@@ -298,7 +298,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
 
   }
 
-  String getBeginTime() {
+  String? getBeginTime() {
     if(customBeginTime != null) {
       return customBeginTime;
     }else {
@@ -307,7 +307,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
 
   }
 
-  String getEndTime() {
+  String? getEndTime() {
     if(customEndTime != null) {
       return customEndTime;
     }else {
@@ -322,7 +322,7 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
     Navigator.pop(context);
   }
 
-  Future<void> _selectDate(BuildContext context, DateTime firstDate, DateTime lastDate, DateTime dateTime, void f(String dateTimeValue)) async {
+  Future<void> _selectDate(BuildContext context, DateTime? firstDate, DateTime? lastDate, DateTime? dateTime, void f(String dateTimeValue)) async {
     if(dateTime == null) {
       dateTime = DateTime.now();
     }
@@ -332,13 +332,13 @@ class _DateIntervalState extends State<DateIntervalMenuView> {
     if(lastDate == null) {
       lastDate = DateUtil.yearDuration(dateTime, 10);
     }
-    final DateTime datePicker = await showDatePicker(
+    final DateTime? datePicker = await showDatePicker(
         context: context,
         initialDate: dateTime,
         firstDate: firstDate,
         lastDate: lastDate);
     if (datePicker != null) {
-      final TimeOfDay timePicked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(dateTime));
+      final TimeOfDay? timePicked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(dateTime));
       if (timePicked != null) {
         DateTime dateTime = DateUtil.combine(datePicker, timePicked);
         String dateTimeValue = DateUtil.format(dateTime, dateFormatValue);

@@ -46,7 +46,7 @@ class InputMenuView extends MenuView {
 }
 
 class _InputState extends State<InputMenuView> {
-  BuildContext context;
+  late BuildContext context;
 
   @override
   Widget build(BuildContext context) {
