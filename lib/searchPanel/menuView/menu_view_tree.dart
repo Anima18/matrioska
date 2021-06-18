@@ -123,6 +123,9 @@ class _TreeMenuState extends State<TreeMenuView> implements TreeDataChangeCallba
               iconSize: 10, onPressed: () {  },
             ),
             titleOnTap: (TreeData treeData) {
+              if(treeData.code == "root") {
+                return;
+              }
               widget.setText(treeData.title);
               widget.setValue(treeData.code);
               dismiss();

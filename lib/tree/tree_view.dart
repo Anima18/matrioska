@@ -43,8 +43,10 @@ class TreeViewState extends State<TreeView> {
   void itemClick(TreeData treeData) {
     widget.titleOnTap!(treeData);
     setState(() {
-      clearSelected(widget.data);
-      treeData.selected = true;
+      if(treeData.code != "root") {
+        clearSelected(widget.data);
+        treeData.selected = true;
+      }
     });
   }
   void clearSelected(List<TreeData> list) {

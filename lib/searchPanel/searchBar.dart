@@ -35,6 +35,8 @@ class _SearchBarState extends State<SearchBar> implements SearchBarCallback {
 
   @override
   Widget build(BuildContext context) {
+    print("==========SearchBar build============");
+
     List<PopupWindowButton> popupList = [];
     widget.children!.forEach((element) {
 
@@ -48,6 +50,15 @@ class _SearchBarState extends State<SearchBar> implements SearchBarCallback {
         value: widget.activeColor,
         child: Container(
           height: widget.height,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              bottom: BorderSide(
+                width: 0.5, //宽度
+                color: Colors.black12, //边框颜色
+              ),
+            ),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: popupList,
